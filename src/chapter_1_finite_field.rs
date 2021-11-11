@@ -99,8 +99,15 @@ impl Div for FieldElement {
     }
 }
 
-impl FieldElement {
-    pub fn pow(self, exponent: U256) -> Self {
+trait Pow<T>
+where
+    T: Add<Output = T> + Mul<Output = T>,
+{
+    fn pow(self, exponent: T) -> Self;
+}
+
+impl Pow<U256> for FieldElement {
+    fn pow(self, exponent: U256) -> Self {
         let mut ret = FieldElement::new(U256::from(1), self.prime);
         let mut counter = exponent % (self.prime - 1);
 
@@ -120,8 +127,10 @@ impl FieldElement {
         }
         ret
     }
+}
 
-    pub fn pow_i32(self, exponent: i32) -> Self {
+impl Pow<i32> for FieldElement {
+    fn pow(self, exponent: i32) -> Self {
         let n = if exponent < 0 {
             self.prime - 1 - U256::from(-exponent)
         } else {
@@ -187,7 +196,7 @@ mod tests {
         let c = FieldElement::new(U256::from(7), U256::from(13));
         let d = FieldElement::new(U256::from(8), U256::from(13));
 
-        assert_eq!(c.pow_i32(-3), d);
+        assert_eq!(c.pow(-3), d);
     }
 
     #[test]
